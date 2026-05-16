@@ -1,0 +1,33 @@
+"use client";
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CSVImport } from "@/components/import/csv-import";
+import { AnkiImport } from "@/components/import/anki-import";
+
+export default function ImportPage() {
+  return (
+    <div className="mx-auto max-w-2xl px-4 py-8 space-y-8">
+      <div>
+        <h1 className="text-xl font-semibold tracking-tight">Import Word Set</h1>
+        <p className="text-[13px] text-muted-foreground mt-1.5">
+          Import words from a CSV/TSV file or an Anki package
+        </p>
+      </div>
+
+      <Tabs defaultValue="csv">
+        <TabsList>
+          <TabsTrigger value="csv">CSV/TSV</TabsTrigger>
+          <TabsTrigger value="anki">Anki</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="csv">
+          <CSVImport />
+        </TabsContent>
+
+        <TabsContent value="anki">
+          <AnkiImport />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
