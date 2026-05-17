@@ -34,6 +34,7 @@ export function WordTable({ words, learningLang, nativeLang }: WordTableProps) {
     getScrollElement: () => parentRef.current,
     estimateSize: () => 48,
     overscan: 20,
+    measureElement: (element) => element.getBoundingClientRect().height,
   });
 
   const lFlag = LANG_FLAGS[learningLang] || "";
@@ -70,38 +71,39 @@ export function WordTable({ words, learningLang, nativeLang }: WordTableProps) {
                     return (
                       <div
                         key={word.id}
+                        data-index={virtualRow.index}
+                        ref={virtualizer.measureElement}
                         className="flex border-b"
                         style={{
                           position: "absolute",
                           top: 0,
                           left: 0,
                           width: "100%",
-                          height: `${virtualRow.size}px`,
                           transform: `translateY(${virtualRow.start}px)`,
                         }}
                       >
-                        <div className="w-[15%] px-4 flex items-center">
+                        <div className="w-[15%] px-4 py-2 flex items-center">
                           <TtsCell
                             text={word.learningWord}
                             lang={learningLang}
                             className="text-primary font-medium"
                           />
                         </div>
-                        <div className="w-[35%] px-4 flex items-center">
+                        <div className="w-[35%] px-4 py-2 flex items-center">
                           <TtsCell
                             text={word.learningSentence}
                             lang={learningLang}
                             className="text-muted-foreground text-sm"
                           />
                         </div>
-                        <div className="w-[15%] px-4 flex items-center">
+                        <div className="w-[15%] px-4 py-2 flex items-center">
                           <TtsCell
                             text={word.nativeWord}
                             lang={nativeLang}
                             className="text-primary font-medium"
                           />
                         </div>
-                        <div className="w-[35%] px-4 flex items-center">
+                        <div className="w-[35%] px-4 py-2 flex items-center">
                           <TtsCell
                             text={word.nativeSentence}
                             lang={nativeLang}
