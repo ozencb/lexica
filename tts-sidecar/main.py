@@ -1,30 +1,30 @@
 import logging
 from contextlib import asynccontextmanager
 
-import numpy as np
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
-from kokoro import KPipeline
+from kokoro_onnx import Kokoro
 from pydantic import BaseModel
 
 from cache import TTSCache
 
 logger = logging.getLogger(__name__)
 
-LANG_MAP = {"en": "a", "fr": "f", "es": "e"}
+SUPPORTED_LANGS = {"en", "fr", "es"}
+LANG_CODES = {"en": "en-us", "fr": "fr-fr", "es": "es"}
 DEFAULT_VOICES = {"en": "af_heart", "fr": "ff_siwis", "es": "ef_dora"}
 
-pipelines: dict[str, KPipeline] = {}
+kokoro: Kokoro | None = None
 cache = TTSCache()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    for iso, kokoro_code in LANG_MAP.items():
-        logger.info(f"Loading pipeline for {iso} ({kokoro_code})")
-        pipelines[iso] = KPipeline(lang_code=kokoro_code)
+    global kokoro
+    logger.info("Loading kokoro-onnx model")
+    kokoro = Kokoro("kokoro-v1.0.onnx", "voices-v1.0.bin")
     yield
-    pipelines.clear()
+    kokoro = None
 
 
 app = FastAPI(lifespan=lifespan)
@@ -43,12 +43,12 @@ def health():
 
 @app.get("/api/tts/status")
 def tts_status():
-    return {"kokoro_available": True, "languages": list(LANG_MAP.keys())}
+    return {"kokoro_available": True, "languages": list(SUPPORTED_LANGS)}
 
 
 @app.post("/api/tts/synthesize")
 def tts(req: TTSRequest):
-    if req.lang not in LANG_MAP:
+    if req.lang not in SUPPORTED_LANGS:
         raise HTTPException(status_code=400, detail=f"Unsupported language: {req.lang}")
 
     voice = req.voice or DEFAULT_VOICES[req.lang]
@@ -57,15 +57,12 @@ def tts(req: TTSRequest):
     if cached:
         return FileResponse(cached, media_type="audio/wav")
 
-    pipeline = pipelines[req.lang]
-    samples_list = []
+    samples, sample_rate = kokoro.create(
+        req.text, voice=voice, speed=1.0, lang=LANG_CODES[req.lang]
+    )
 
-    for _, _, audio in pipeline(req.text, voice=voice):
-        samples_list.append(audio.numpy())
-
-    if not samples_list:
+    if samples is None or len(samples) == 0:
         raise HTTPException(status_code=500, detail="No audio generated")
 
-    audio_data = np.concatenate(samples_list)
-    path = cache.put(req.text, req.lang, voice, audio_data, 24000)
+    path = cache.put(req.text, req.lang, voice, samples, sample_rate)
     return FileResponse(path, media_type="audio/wav")
