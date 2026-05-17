@@ -36,6 +36,11 @@ class TTSRequest(BaseModel):
     voice: str | None = None
 
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
 @app.get("/api/tts/status")
 def tts_status():
     return {"kokoro_available": True, "languages": list(LANG_MAP.keys())}
