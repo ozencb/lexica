@@ -15,11 +15,25 @@ interface AnkiNote {
   fields: Record<string, string>;
 }
 
+const MAX_APKG_SIZE = 100 * 1024 * 1024; // 100 MB decompressed
+const MAX_APKG_ENTRIES = 10_000;
+
 export function parseAnkiPackage(buffer: Buffer): {
   models: AnkiModel[];
   notes: AnkiNote[];
 } {
   const zip = new AdmZip(buffer);
+  const entries = zip.getEntries();
+
+  if (entries.length > MAX_APKG_ENTRIES) {
+    throw new Error("Invalid .apkg file: too many entries");
+  }
+
+  const totalSize = entries.reduce((sum, e) => sum + e.header.size, 0);
+  if (totalSize > MAX_APKG_SIZE) {
+    throw new Error("Invalid .apkg file: decompressed size exceeds limit");
+  }
+
   const entry = zip.getEntry("collection.anki2");
   if (!entry) {
     throw new Error("Invalid .apkg file: missing collection.anki2");

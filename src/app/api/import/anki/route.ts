@@ -3,6 +3,8 @@ import { wordSets, words } from "@/lib/db/schema";
 import { parseAnkiPackage } from "@/lib/import/anki-parser";
 import { ankiMappingSchema } from "@/lib/validations";
 
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
+
 export async function POST(request: Request) {
   const formData = await request.formData();
   const file = formData.get("file") as File | null;
@@ -13,6 +15,10 @@ export async function POST(request: Request) {
 
   if (!file || !mappingStr || !wordSetName || !learningLang || !nativeLang) {
     return Response.json({ error: "Missing required fields" }, { status: 400 });
+  }
+
+  if (file.size > MAX_FILE_SIZE) {
+    return Response.json({ error: "File too large (max 50 MB)" }, { status: 400 });
   }
 
   let raw: unknown;
