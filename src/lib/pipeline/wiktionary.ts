@@ -14,7 +14,7 @@ const LANG_NAMES: Record<string, string> = {
 export async function fetchWiktionaryData(
   learningLang: string,
   nativeLang: string
-): Promise<Map<string, { pos: string; translations: string[] }>> {
+): Promise<Map<string, Array<{ pos: string; translations: string[] }>>> {
   const langName = LANG_NAMES[learningLang];
   if (!langName) throw new Error(`Unsupported language: ${learningLang}`);
 
@@ -29,7 +29,7 @@ export async function fetchWiktionaryData(
     fs.writeFileSync(cacheFile, buffer);
   }
 
-  const result = new Map<string, { pos: string; translations: string[] }>();
+  const result = new Map<string, Array<{ pos: string; translations: string[] }>>();
 
   const gunzip = zlib.createGunzip();
   const stream = fs.createReadStream(cacheFile).pipe(gunzip);
@@ -42,7 +42,6 @@ export async function fetchWiktionaryData(
       const word = entry.word?.toLowerCase();
       const pos = entry.pos;
       if (!word || !pos) continue;
-      if (result.has(word)) continue;
 
       const translations: string[] = [];
 
@@ -81,7 +80,21 @@ export async function fetchWiktionaryData(
       }
 
       if (translations.length > 0) {
-        result.set(word, { pos, translations });
+        const existing = result.get(word);
+        if (existing) {
+          const samePosEntry = existing.find((e) => e.pos === pos);
+          if (samePosEntry) {
+            for (const t of translations) {
+              if (!samePosEntry.translations.includes(t)) {
+                samePosEntry.translations.push(t);
+              }
+            }
+          } else {
+            existing.push({ pos, translations });
+          }
+        } else {
+          result.set(word, [{ pos, translations }]);
+        }
       }
     } catch {
       // skip malformed lines

@@ -21,20 +21,11 @@ export async function runPipeline(params: {
   progress("wiktionary", "Fetching Wiktionary data...");
   const wiktionaryData = await fetchWiktionaryData(learningLang, nativeLang);
 
-  // Filter by POS if requested
-  if (pos !== "both") {
-    for (const [word, data] of wiktionaryData) {
-      if (data.pos !== pos) {
-        wiktionaryData.delete(word);
-      }
-    }
-  }
-
   progress("tatoeba", "Fetching example sentences...");
   const tatoebaSentences = await fetchTatoebaSentences(learningLang, nativeLang);
 
   progress("coverage", "Computing coverage...");
-  const report = computeCoverage(frequencyWords, wiktionaryData, tatoebaSentences);
+  const report = computeCoverage(frequencyWords, wiktionaryData, tatoebaSentences, pos);
 
   progress("done", "Pipeline complete.");
   return report;

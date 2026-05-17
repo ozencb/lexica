@@ -9,10 +9,12 @@ const LANG_CODES: Record<string, string> = {
   es: "spa",
 };
 
+const MAX_SENTENCES_PER_WORD = 20;
+
 export async function fetchTatoebaSentences(
   learningLang: string,
   _nativeLang: string
-): Promise<Map<string, { learningSentence: string; nativeSentence: string }>> {
+): Promise<Map<string, Array<{ learningSentence: string; nativeSentence: string }>>> {
   const langCode = LANG_CODES[learningLang];
   if (!langCode) throw new Error(`Unsupported language for Tatoeba: ${learningLang}`);
 
@@ -36,7 +38,7 @@ export async function fetchTatoebaSentences(
   const content = tsvEntry.getData().toString("utf-8");
   const result = new Map<
     string,
-    { learningSentence: string; nativeSentence: string }
+    Array<{ learningSentence: string; nativeSentence: string }>
   >();
 
   for (const line of content.split("\n")) {
@@ -54,11 +56,14 @@ export async function fetchTatoebaSentences(
       .filter(Boolean);
 
     for (const word of words) {
-      if (!result.has(word)) {
-        result.set(word, {
-          learningSentence: otherSentence,
-          nativeSentence: englishSentence,
-        });
+      const existing = result.get(word);
+      const entry = { learningSentence: otherSentence, nativeSentence: englishSentence };
+      if (existing) {
+        if (existing.length < MAX_SENTENCES_PER_WORD) {
+          existing.push(entry);
+        }
+      } else {
+        result.set(word, [entry]);
       }
     }
   }
