@@ -2,6 +2,25 @@
   "name": "lexica",
   "version": "0.1.2",
   "private": true,
+  "description": "A self-hosted spaced repetition app for language learning",
+  "author": "Özenç Bilgili",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ozencb/lexica.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ozencb/lexica/issues"
+  },
+  "homepage": "https://github.com/ozencb/lexica#readme",
+  "keywords": [
+    "spaced-repetition",
+    "flashcards",
+    "language-learning",
+    "self-hosted",
+    "nextjs",
+    "sqlite"
+  ],
   "engines": {
     "node": ">=22"
   },
