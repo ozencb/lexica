@@ -18,9 +18,9 @@ export default function TablePage() {
   const words = data?.items;
 
   return (
-    <div className="p-4 md:p-6 space-y-5">
+    <div className="p-4 md:p-6 pt-14 md:pt-6 space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-        <h1 className="text-xl font-semibold tracking-tight">Table</h1>
+        <h1 className="text-lg font-semibold tracking-tight">Table</h1>
         {wordSets && (
           <WordSetSelector
             wordSets={wordSets}
@@ -33,7 +33,7 @@ export default function TablePage() {
       <FilterBar filters={filters} onChange={setFilters} />
 
       {isLoading && (
-        <p className="text-muted-foreground">Loading words...</p>
+        <p className="text-sm text-muted-foreground">Loading words...</p>
       )}
 
       {!isLoading && words && words.length > 0 && activeSet && (
@@ -45,13 +45,13 @@ export default function TablePage() {
       )}
 
       {!isLoading && activeSetId && words && words.length === 0 && (
-        <p className="text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           No words found. Try adjusting your filters.
         </p>
       )}
 
       {!isLoading && !activeSetId && (
-        <p className="text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           No word sets yet. Generate one or import from CSV/Anki.
         </p>
       )}

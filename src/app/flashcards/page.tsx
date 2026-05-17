@@ -105,7 +105,7 @@ export default function FlashcardsPage() {
 
   if (done) {
     return (
-      <div className="p-4 md:p-6 flex items-center justify-center min-h-[60vh]">
+      <div className="p-4 md:p-6 pt-14 md:pt-6 flex items-center justify-center min-h-[60vh]">
         <SessionSummary
           reviewed={cards.length}
           correct={correct}
@@ -117,9 +117,9 @@ export default function FlashcardsPage() {
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-6">
+    <div className="p-4 md:p-6 pt-14 md:pt-6 space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-        <h1 className="text-xl font-semibold tracking-tight">Flashcards</h1>
+        <h1 className="text-lg font-semibold tracking-tight">Study</h1>
         {wordSets && (
           <WordSetSelector
             wordSets={wordSets}
@@ -138,7 +138,7 @@ export default function FlashcardsPage() {
       )}
 
       {studying && currentCard && (
-        <div className="space-y-6 pt-4">
+        <div className="space-y-5 pt-2">
           <SessionProgress
             reviewed={currentIndex}
             total={cards.length}
@@ -171,15 +171,15 @@ export default function FlashcardsPage() {
           )}
 
           {!flipped && (
-            <p className="text-center text-sm text-muted-foreground/50">
-              Press space or click to reveal answer
+            <p className="text-center text-xs text-muted-foreground/40">
+              Press space or click to reveal
             </p>
           )}
         </div>
       )}
 
       {!studying && !activeSetId && (
-        <p className="text-muted-foreground text-center">
+        <p className="text-sm text-muted-foreground text-center">
           No word sets available. Generate or import one first.
         </p>
       )}

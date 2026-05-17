@@ -34,10 +34,10 @@ export function GenerateForm({ onSubmit, loading }: GenerateFormProps) {
   const [count, setCount] = useState(1000);
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <label className="text-[13px] font-medium text-muted-foreground">Learning Language</label>
+    <div className="space-y-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground">Learning Language</label>
           <Select value={learningLang} onValueChange={(v) => v && setLearningLang(v)}>
             <SelectTrigger className="w-full">
               <SelectValue>{LANGUAGES.find((l) => l.value === learningLang)?.label}</SelectValue>
@@ -52,8 +52,8 @@ export function GenerateForm({ onSubmit, loading }: GenerateFormProps) {
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-[13px] font-medium text-muted-foreground">Native Language</label>
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground">Native Language</label>
           <Select value={nativeLang} onValueChange={(v) => v && setNativeLang(v)}>
             <SelectTrigger className="w-full">
               <SelectValue>{LANGUAGES.find((l) => l.value === nativeLang)?.label}</SelectValue>
@@ -69,9 +69,9 @@ export function GenerateForm({ onSubmit, loading }: GenerateFormProps) {
         </div>
       </div>
 
-      <div className="space-y-2">
-        <label className="text-[13px] font-medium text-muted-foreground">Part of Speech</label>
-        <div className="flex gap-2">
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Part of Speech</label>
+        <div className="flex gap-1.5">
           {(["noun", "verb", "both"] as const).map((option) => (
             <Button
               key={option}
@@ -85,8 +85,8 @@ export function GenerateForm({ onSubmit, loading }: GenerateFormProps) {
         </div>
       </div>
 
-      <div className="space-y-2">
-        <label className="text-[13px] font-medium text-muted-foreground">
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground">
           Word Count: <span className="text-foreground tabular-nums">{count.toLocaleString()}</span>
         </label>
         <Slider
@@ -96,7 +96,7 @@ export function GenerateForm({ onSubmit, loading }: GenerateFormProps) {
           max={5000}
           step={100}
         />
-        <div className="flex justify-between text-xs text-muted-foreground">
+        <div className="flex justify-between text-[10px] text-muted-foreground">
           <span>500</span>
           <span>5,000</span>
         </div>

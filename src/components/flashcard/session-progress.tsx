@@ -16,8 +16,8 @@ export function SessionProgress({
   const pct = total > 0 ? (reviewed / total) * 100 : 0;
 
   return (
-    <div className="w-full max-w-md mx-auto space-y-2.5">
-      <div className="flex justify-between text-[13px]">
+    <div className="w-full max-w-md mx-auto space-y-2">
+      <div className="flex justify-between text-xs">
         <span className="text-muted-foreground tabular-nums">
           {reviewed} / {total}
         </span>

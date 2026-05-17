@@ -13,20 +13,20 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-6 max-w-2xl">
-      <h1 className="text-xl font-semibold tracking-tight">Settings</h1>
+    <div className="p-4 md:p-6 pt-14 md:pt-6 space-y-4 max-w-xl">
+      <h1 className="text-lg font-semibold tracking-tight">Settings</h1>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Database Backup</CardTitle>
+          <CardTitle className="text-sm">Database Backup</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Download a copy of your database including all word sets, words, and
             study progress.
           </p>
-          <Button variant="outline" onClick={handleBackup}>
-            <Download className="h-4 w-4 mr-2" />
+          <Button variant="outline" size="sm" onClick={handleBackup}>
+            <Download className="h-3.5 w-3.5 mr-1.5" />
             Download Backup
           </Button>
         </CardContent>
@@ -34,14 +34,15 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">TTS Audio Cache</CardTitle>
+          <CardTitle className="text-sm">TTS Audio Cache</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Generated TTS audio is cached on disk. Clear the cache to free space.
           </p>
           <Button
             variant="outline"
+            size="sm"
             disabled={clearing}
             onClick={async () => {
               setClearing(true);
@@ -49,7 +50,7 @@ export default function SettingsPage() {
               setClearing(false);
             }}
           >
-            <Trash2 className="h-4 w-4 mr-2" />
+            <Trash2 className="h-3.5 w-3.5 mr-1.5" />
             {clearing ? "Clearing..." : "Clear TTS Cache"}
           </Button>
         </CardContent>

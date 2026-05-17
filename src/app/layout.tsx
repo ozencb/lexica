@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import { NavBar } from "@/components/layout/nav-bar";
+import { Plus_Jakarta_Sans } from "next/font/google";
+import { Geist_Mono } from "next/font/google";
+import { Sidebar } from "@/components/layout/sidebar";
 import { ThemeScript } from "@/components/layout/theme-script";
 import { ErrorBoundary } from "@/components/error-boundary";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
   subsets: ["latin"],
 });
 
@@ -31,15 +32,15 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${jakarta.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
         <ThemeScript />
       </head>
-      <body className="min-h-full flex flex-col">
-        <NavBar />
-        <main className="flex-1">
+      <body className="min-h-full flex">
+        <Sidebar />
+        <main className="flex-1 min-h-screen overflow-auto">
           <ErrorBoundary>{children}</ErrorBoundary>
         </main>
       </body>

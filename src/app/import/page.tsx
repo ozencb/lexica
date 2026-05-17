@@ -6,10 +6,10 @@ import { AnkiImport } from "@/components/import/anki-import";
 
 export default function ImportPage() {
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8 space-y-8">
+    <div className="mx-auto max-w-xl px-4 py-8 pt-14 md:pt-8 space-y-6">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Import Word Set</h1>
-        <p className="text-[13px] text-muted-foreground mt-1.5">
+        <h1 className="text-lg font-semibold tracking-tight">Import Word Set</h1>
+        <p className="text-xs text-muted-foreground mt-1">
           Import words from a CSV/TSV file or an Anki package
         </p>
       </div>

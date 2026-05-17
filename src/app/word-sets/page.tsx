@@ -63,21 +63,21 @@ export default function WordSetsPage() {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-5">
-      <h1 className="text-xl font-semibold tracking-tight">Word Sets</h1>
+    <div className="p-4 md:p-6 pt-14 md:pt-6 space-y-4">
+      <h1 className="text-lg font-semibold tracking-tight">Word Sets</h1>
 
       {(!wordSets || wordSets.length === 0) && (
-        <p className="text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           No word sets yet. Generate one or import from CSV/Anki.
         </p>
       )}
 
       {wordSets && wordSets.length > 0 && (
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           {wordSets.map((set) => (
             <div
               key={set.id}
-              className="flex items-center justify-between rounded-xl border border-border/60 p-4 transition-colors hover:bg-card"
+              className="flex items-center justify-between rounded-lg border border-border/60 px-4 py-3 transition-colors hover:bg-muted/50"
             >
               {renamingId === set.id ? (
                 <form
@@ -91,7 +91,7 @@ export default function WordSetsPage() {
                     ref={inputRef}
                     value={renameValue}
                     onChange={(e) => setRenameValue(e.target.value)}
-                    className="max-w-xs h-9"
+                    className="max-w-xs h-8"
                   />
                   <Button type="submit" size="sm" disabled={!renameValue.trim()}>
                     Save
@@ -107,8 +107,8 @@ export default function WordSetsPage() {
                 </form>
               ) : (
                 <div className="min-w-0">
-                  <p className="font-medium truncate">{set.name}</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm font-medium truncate">{set.name}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     {langLabel(set.learningLang)} → {langLabel(set.nativeLang)}
                     {" · "}
                     {set.wordCount} {set.wordCount === 1 ? "word" : "words"}
@@ -120,7 +120,7 @@ export default function WordSetsPage() {
                 <DropdownMenu>
                   <DropdownMenuTrigger
                     render={
-                      <Button size="icon" variant="ghost" className="h-9 w-9 shrink-0" />
+                      <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0" />
                     }
                   >
                     <MoreVertical className="h-4 w-4" />

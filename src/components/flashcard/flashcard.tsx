@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useTts } from "@/hooks/use-tts";
 import { Volume2 } from "lucide-react";
 
@@ -37,7 +36,7 @@ function TtsText({
       className={`inline-flex items-center gap-1.5 hover:text-primary transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none rounded ${className}`}
     >
       <span>{text}</span>
-      <Volume2 className="h-3.5 w-3.5 opacity-40 hover:opacity-100 transition-opacity shrink-0" />
+      <Volume2 className="h-3 w-3 opacity-30 hover:opacity-100 transition-opacity shrink-0" />
     </button>
   );
 }
@@ -58,7 +57,7 @@ export function Flashcard({
       role="button"
       tabIndex={0}
       aria-label={flipped ? "Flashcard showing answer. Click to flip back." : "Flashcard showing question. Click to reveal answer."}
-      className="w-full max-w-md mx-auto cursor-pointer perspective-[1000px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none rounded-2xl"
+      className="w-full max-w-md mx-auto cursor-pointer perspective-[1000px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none rounded-xl"
       onClick={onFlip}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onFlip(); } }}
     >
@@ -71,54 +70,54 @@ export function Flashcard({
       >
         {/* Front */}
         <div
-          className="border border-border/60 rounded-2xl p-8 md:p-12 text-center bg-card shadow-sm shadow-primary/5"
+          className="border border-border/60 rounded-xl p-8 md:p-10 text-center bg-card"
           style={{ backfaceVisibility: "hidden" }}
         >
-          <div className="text-[11px] text-muted-foreground uppercase tracking-[0.15em] mb-6 font-medium">
+          <div className="text-[10px] text-muted-foreground uppercase tracking-[0.15em] mb-5 font-medium">
             {learningLang.toUpperCase()} · {partOfSpeech}
           </div>
-          <div className="mb-4">
+          <div className="mb-3">
             <TtsText
               text={learningWord}
               lang={learningLang}
-              className="text-2xl md:text-3xl font-semibold text-primary justify-center"
+              className="text-xl md:text-2xl font-semibold text-primary justify-center"
             />
           </div>
           {learningSentence && (
             <TtsText
               text={learningSentence}
               lang={learningLang}
-              className="text-sm text-muted-foreground justify-center leading-relaxed"
+              className="text-xs text-muted-foreground justify-center leading-relaxed"
             />
           )}
-          <div className="text-[11px] text-muted-foreground/30 mt-8 tracking-wide">
+          <div className="text-[10px] text-muted-foreground/25 mt-6 tracking-wide">
             click to flip
           </div>
         </div>
 
         {/* Back */}
         <div
-          className="absolute inset-0 border border-border/60 rounded-2xl p-8 md:p-12 text-center bg-card shadow-sm shadow-primary/5"
+          className="absolute inset-0 border border-border/60 rounded-xl p-8 md:p-10 text-center bg-card"
           style={{
             backfaceVisibility: "hidden",
             transform: "rotateY(180deg)",
           }}
         >
-          <div className="text-[11px] text-muted-foreground uppercase tracking-[0.15em] mb-6 font-medium">
+          <div className="text-[10px] text-muted-foreground uppercase tracking-[0.15em] mb-5 font-medium">
             {nativeLang.toUpperCase()} · {partOfSpeech}
           </div>
-          <div className="mb-4">
+          <div className="mb-3">
             <TtsText
               text={nativeWord}
               lang={nativeLang}
-              className="text-2xl md:text-3xl font-semibold justify-center"
+              className="text-xl md:text-2xl font-semibold justify-center"
             />
           </div>
           {nativeSentence && (
             <TtsText
               text={nativeSentence}
               lang={nativeLang}
-              className="text-sm text-muted-foreground justify-center leading-relaxed"
+              className="text-xs text-muted-foreground justify-center leading-relaxed"
             />
           )}
         </div>

@@ -22,13 +22,13 @@ export function FilterBar({ filters, onChange }: FilterBarProps) {
         placeholder="Search words..."
         value={filters.search || ""}
         onChange={(e) => onChange({ ...filters, search: e.target.value })}
-        className="sm:max-w-xs"
+        className="sm:max-w-[200px]"
       />
       <Select
         value={filters.pos || "all"}
         onValueChange={(v) => onChange({ ...filters, pos: v ?? undefined })}
       >
-        <SelectTrigger className="sm:w-[140px]">
+        <SelectTrigger className="sm:w-[120px]">
           <SelectValue>
             {{ all: "All", noun: "Nouns", verb: "Verbs" }[filters.pos || "all"]}
           </SelectValue>
@@ -43,7 +43,7 @@ export function FilterBar({ filters, onChange }: FilterBarProps) {
         value={filters.sort || "frequencyRank"}
         onValueChange={(v) => onChange({ ...filters, sort: v ?? undefined })}
       >
-        <SelectTrigger className="sm:w-[160px]">
+        <SelectTrigger className="sm:w-[140px]">
           <SelectValue>
             {{ frequencyRank: "Frequency", learningWord: "Alphabetical" }[filters.sort || "frequencyRank"]}
           </SelectValue>

@@ -74,10 +74,10 @@ export default function GeneratePage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8 space-y-8">
+    <div className="mx-auto max-w-xl px-4 py-8 pt-14 md:pt-8 space-y-6">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Generate Word Set</h1>
-        <p className="text-[13px] text-muted-foreground mt-1.5">
+        <h1 className="text-lg font-semibold tracking-tight">Generate Word Set</h1>
+        <p className="text-xs text-muted-foreground mt-1">
           Build a word set from frequency lists, Wiktionary, and Tatoeba
         </p>
       </div>
@@ -85,13 +85,13 @@ export default function GeneratePage() {
       <GenerateForm onSubmit={handleGenerate} loading={loading} />
 
       {error && (
-        <div className="rounded-xl border border-destructive/30 bg-destructive/8 p-4 text-sm text-destructive">
+        <div className="rounded-lg border border-destructive/30 bg-destructive/8 p-3 text-sm text-destructive">
           {error}
         </div>
       )}
 
       {result && !savedId && (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <CoverageReport
             total={result.total}
             complete={result.complete}
@@ -105,10 +105,10 @@ export default function GeneratePage() {
       )}
 
       {savedId && (
-        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/8 p-4 text-sm space-y-2">
-          <p className="font-medium text-emerald-400">Word set saved successfully.</p>
-          <Link href="/table" className="text-primary underline text-sm hover:no-underline">
-            View in table
+        <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/8 p-3 text-sm space-y-1.5">
+          <p className="font-medium text-emerald-400">Word set saved.</p>
+          <Link href="/table" className="text-primary text-xs hover:underline">
+            View in table →
           </Link>
         </div>
       )}
