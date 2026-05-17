@@ -20,8 +20,8 @@ import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 
 const navLinks = [
-  { href: "/word-sets", label: "Word Sets", icon: Layers },
   { href: "/table", label: "Table", icon: Table2 },
+  { href: "/word-sets", label: "Word Sets", icon: Layers },
   { href: "/flashcards", label: "Study", icon: BookOpen },
   { href: "/progress", label: "Progress", icon: BarChart3 },
   { href: "/generate", label: "Generate", icon: Sparkles },
