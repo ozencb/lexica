@@ -33,7 +33,6 @@ jobs:
         id: package_version
         run: echo "version=$(jq -r .version package.json)" >> $GITHUB_OUTPUT
 
-      # Build and push the Docker image
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
@@ -44,6 +43,17 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/lexica:${{ steps.package_version.outputs.version }}
           platforms: linux/amd64,linux/arm64
           file: Dockerfile
+
+      - name: Build and push TTS sidecar image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./tts-sidecar
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/lexica-tts:latest
+            ghcr.io/${{ github.repository_owner }}/lexica-tts:${{ steps.package_version.outputs.version }}
+          platforms: linux/amd64,linux/arm64
+          file: ./tts-sidecar/Dockerfile
 
       # Optional: Clear Docker cache
       - name: Clear Docker cache
