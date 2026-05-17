@@ -4,7 +4,7 @@ Self-hostable language learning app with spaced repetition flashcards. Generate 
 
 > Built almost entirely through vibe coding to test the capabilities of latest models.
 
-<https://github.com/ozencb/lexica/raw/main/docs/recordings/demo.mp4>
+<video src="https://github.com/ozencb/lexica/raw/main/docs/recordings/demo.mp4" width="352" height="720"></video>
 
 ## Features
 
