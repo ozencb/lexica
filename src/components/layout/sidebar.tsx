@@ -12,10 +12,12 @@ import {
   Settings,
   Menu,
   X,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const navLinks = [
   { href: "/word-sets", label: "Word Sets", icon: Layers },
@@ -29,6 +31,18 @@ const navLinks = [
 export function Sidebar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("sidebar-collapsed");
+    if (stored === "true") setCollapsed(true);
+  }, []);
+
+  const toggleCollapsed = () => {
+    const next = !collapsed;
+    setCollapsed(next);
+    localStorage.setItem("sidebar-collapsed", String(next));
+  };
 
   return (
     <>
@@ -86,11 +100,29 @@ export function Sidebar() {
       </div>
 
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex flex-col w-52 shrink-0 h-screen sticky top-0 bg-sidebar border-r border-sidebar-border">
-        <div className="flex items-center h-12 px-4">
-          <Link href="/" className="text-sm font-bold tracking-tight text-foreground">
-            Lexica
-          </Link>
+      <aside
+        className={cn(
+          "hidden md:flex flex-col shrink-0 h-screen sticky top-0 bg-sidebar border-r border-sidebar-border transition-[width] duration-200",
+          collapsed ? "w-14" : "w-52"
+        )}
+      >
+        <div className="flex items-center h-12 px-3">
+          {!collapsed && (
+            <Link href="/" className="text-sm font-bold tracking-tight text-foreground">
+              Lexica
+            </Link>
+          )}
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            className={cn(
+              "p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors",
+              collapsed ? "mx-auto" : "ml-auto"
+            )}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {collapsed ? <PanelLeftOpen className="size-4" /> : <PanelLeftClose className="size-4" />}
+          </button>
         </div>
 
         <nav className="flex flex-col gap-0.5 px-2 flex-1">
@@ -100,32 +132,39 @@ export function Sidebar() {
               <Link
                 key={link.href}
                 href={link.href}
+                title={collapsed ? link.label : undefined}
                 className={cn(
-                  "flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[13px] transition-colors",
+                  "flex items-center gap-2.5 rounded-md text-[13px] transition-colors",
+                  collapsed ? "justify-center px-0 py-1.5" : "px-2.5 py-1.5",
                   active
                     ? "bg-primary/10 text-foreground font-medium"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
               >
                 <link.icon className="size-4 shrink-0" />
-                {link.label}
+                {!collapsed && link.label}
               </Link>
             );
           })}
         </nav>
 
-        <div className="flex items-center gap-0.5 px-2 pb-3 border-t border-sidebar-border pt-2">
+        <div className={cn(
+          "flex items-center gap-0.5 px-2 pb-3 border-t border-sidebar-border pt-2",
+          collapsed && "flex-col"
+        )}>
           <Link
             href="/settings"
+            title={collapsed ? "Settings" : undefined}
             className={cn(
-              "flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[13px] transition-colors flex-1",
+              "flex items-center gap-2.5 rounded-md text-[13px] transition-colors",
+              collapsed ? "justify-center px-0 py-1.5" : "px-2.5 py-1.5 flex-1",
               pathname.startsWith("/settings")
                 ? "bg-primary/10 text-foreground font-medium"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted"
             )}
           >
             <Settings className="size-4 shrink-0" />
-            Settings
+            {!collapsed && "Settings"}
           </Link>
           <ThemeToggle />
         </div>
