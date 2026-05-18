@@ -73,11 +73,11 @@ export function Sidebar() {
       {/* Mobile drawer */}
       <div
         className={cn(
-          "md:hidden fixed top-12 left-0 bottom-0 z-40 w-56 bg-sidebar border-r border-sidebar-border transition-transform duration-200",
+          "md:hidden fixed top-12 left-0 bottom-0 z-40 w-56 bg-sidebar border-r border-sidebar-border transition-transform duration-200 flex flex-col",
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <nav className="flex flex-col gap-0.5 p-2 pt-3">
+        <nav className="flex flex-col gap-0.5 p-2 pt-3 flex-1">
           {navLinks.map((link) => {
             const active = pathname.startsWith(link.href);
             return (
@@ -98,6 +98,31 @@ export function Sidebar() {
             );
           })}
         </nav>
+        <div className="flex items-center gap-0.5 px-2 pb-3 border-t border-sidebar-border pt-2">
+          <Link
+            href="/settings"
+            onClick={() => setMobileOpen(false)}
+            className={cn(
+              "flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[13px] transition-colors flex-1",
+              pathname.startsWith("/settings")
+                ? "bg-primary/10 text-foreground font-medium"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            )}
+          >
+            <Settings className="size-4 shrink-0" />
+            Settings
+          </Link>
+          <a
+            href="https://github.com/ozencb/lexica"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="GitHub"
+            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          >
+            <GitFork className="size-4" />
+          </a>
+          <ThemeToggle />
+        </div>
       </div>
 
       {/* Desktop sidebar */}
