@@ -14,6 +14,7 @@ import {
   X,
   PanelLeftClose,
   PanelLeftOpen,
+  Github,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { cn } from "@/lib/utils";
@@ -166,6 +167,15 @@ export function Sidebar() {
             <Settings className="size-4 shrink-0" />
             {!collapsed && "Settings"}
           </Link>
+          <a
+            href="https://github.com/ozencb/lexica"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="GitHub"
+            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          >
+            <Github className="size-4" />
+          </a>
           <ThemeToggle />
         </div>
       </aside>
