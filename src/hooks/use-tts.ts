@@ -62,6 +62,8 @@ export function useTts() {
 
       const source = ctx.createBufferSource();
       source.buffer = buffer;
+      const rate = parseFloat(localStorage.getItem("tts-speed") || "1");
+      source.playbackRate.value = rate;
       source.connect(ctx.destination);
       source.start();
       currentSourceRef.current = source;
