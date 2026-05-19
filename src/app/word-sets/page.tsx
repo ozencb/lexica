@@ -73,9 +73,14 @@ export default function WordSetsPage() {
         </p>
       )}
 
-      <PredefinedSetLoader />
+      <section className="space-y-2">
+        <h2 className="text-sm font-medium text-muted-foreground">Predefined Sets</h2>
+        <PredefinedSetLoader />
+      </section>
 
       {wordSets && wordSets.length > 0 && (
+        <section className="space-y-2">
+        <h2 className="text-sm font-medium text-muted-foreground">Your Word Sets</h2>
         <div className="space-y-1.5">
           {wordSets.map((set) => (
             <div
@@ -158,6 +163,7 @@ export default function WordSetsPage() {
             </div>
           ))}
         </div>
+        </section>
       )}
     </div>
   );
