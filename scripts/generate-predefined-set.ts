@@ -10,6 +10,7 @@ import { fetchWiktionaryData } from "../src/lib/pipeline/wiktionary";
 import { fetchTatoebaSentences } from "../src/lib/pipeline/tatoeba";
 import {
   computeCoverage,
+  filterByPos,
   type ProcessedWord,
 } from "../src/lib/pipeline/coverage";
 
@@ -240,11 +241,18 @@ if (existing) {
 } else {
   console.log("Running data pipeline...");
 
-  console.log("  Fetching frequency words...");
-  const frequencyWords = await fetchFrequencyWords(target, count * 5);
-
   console.log("  Fetching Wiktionary data...");
   const wiktionaryData = await fetchWiktionaryData(target, source);
+
+  console.log("  Fetching frequency words...");
+  const allFrequencyWords = await fetchFrequencyWords(target, 50_000);
+  const frequencyWords = filterByPos(allFrequencyWords, wiktionaryData, posFilter, count);
+
+  if (frequencyWords.length < count) {
+    console.warn(
+      `Warning: only ${frequencyWords.length} ${wordType} found (requested ${count})`
+    );
+  }
 
   console.log("  Fetching Tatoeba sentences...");
   const tatoebaSentences = await fetchTatoebaSentences(target, source);
@@ -257,16 +265,7 @@ if (existing) {
     posFilter
   );
 
-  const filtered = report.words.filter((w) => w.partOfSpeech === posFilter);
-  const selected = filtered.slice(0, count);
-
-  if (selected.length < count) {
-    console.warn(
-      `Warning: only ${selected.length} ${wordType} found (requested ${count})`
-    );
-  }
-
-  words = selected.map((w) => ({ ...w, verified: false }));
+  words = report.words.map((w) => ({ ...w, verified: false }));
   saveProgress(words);
   console.log(`Pipeline done. ${words.length} words saved to progress.`);
 }
@@ -333,12 +332,13 @@ await runBatches(
       learningSentence: w.learningSentence,
       nativeSentence: w.nativeSentence,
     }));
-    return `You are a ${targetLabel}↔${sourceLabel} language expert. Review these vocabulary entries for accuracy.
+    return `You are a ${targetLabel}↔${sourceLabel} language expert. Review these ${targetLabel} ${wordType} for accuracy.
 
 Check each entry for:
-1. Translation accuracy
-2. Grammar and naturalness of example sentences
-3. Sentence translation accuracy
+1. **POS accuracy**: Is the word PRIMARILY used as a ${posFilter} in everyday ${targetLabel}? Words that are mainly adverbs, particles, prepositions, conjunctions, pronouns, or determiners must be rejected even if they have a rare ${posFilter} sense. Examples: "pas" is an adverb (not), not a noun; "ne" is a particle, not a noun. For rejected words, set nativeWord to "REMOVE".
+2. Translation accuracy
+3. Grammar and naturalness of example sentences
+4. Sentence translation accuracy
 
 Fix any errors. Return unchanged entries as-is.
 Return ONLY a valid JSON array with the same structure.
@@ -350,6 +350,13 @@ ${JSON.stringify(batchData, null, 2)}`;
     for (const verified of result) {
       const word = words.find((w) => w.learningWord === verified.learningWord);
       if (word) {
+        if (verified.nativeWord === "REMOVE") {
+          word.nativeWord = null;
+          word.learningSentence = null;
+          word.nativeSentence = null;
+          word.verified = true;
+          continue;
+        }
         if (verified.nativeWord) word.nativeWord = verified.nativeWord;
         if (verified.learningSentence) word.learningSentence = verified.learningSentence;
         if (verified.nativeSentence) word.nativeSentence = verified.nativeSentence;

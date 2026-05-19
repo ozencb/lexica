@@ -27,6 +27,28 @@ function sentenceContainsTranslation(
   });
 }
 
+const FUNCTION_POS = new Set([
+  "adv", "particle", "conj", "prep", "det", "pron", "intj", "num", "article",
+]);
+
+export function filterByPos(
+  frequencyWords: Array<{ word: string; rank: number }>,
+  wiktionaryData: Map<string, Array<{ pos: string; translations: string[] }>>,
+  pos: "noun" | "verb",
+  count: number,
+): Array<{ word: string; rank: number }> {
+  const filtered: Array<{ word: string; rank: number }> = [];
+  for (const entry of frequencyWords) {
+    if (filtered.length >= count) break;
+    const senses = wiktionaryData.get(entry.word.toLowerCase());
+    if (!senses || senses.length === 0) continue;
+    if (!senses.some((s) => s.pos === pos)) continue;
+    if (FUNCTION_POS.has(senses[0].pos)) continue;
+    filtered.push(entry);
+  }
+  return filtered;
+}
+
 export function computeCoverage(
   frequencyWords: Array<{ word: string; rank: number }>,
   wiktionaryData: Map<string, Array<{ pos: string; translations: string[] }>>,
@@ -48,8 +70,9 @@ export function computeCoverage(
     let selectedSense: { pos: string; translations: string[] } | undefined;
     if (senses && senses.length > 0) {
       if (posFilter !== "both") {
-        if (senses[0].pos === posFilter) {
-          selectedSense = senses[0];
+        const match = senses.find((s) => s.pos === posFilter);
+        if (match && !FUNCTION_POS.has(senses[0].pos)) {
+          selectedSense = match;
         }
       } else {
         selectedSense = senses[0];
