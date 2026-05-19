@@ -155,8 +155,10 @@ function isComplete(w: WordEntry): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// Pre-flight
+// Main
 // ---------------------------------------------------------------------------
+
+async function main() {
 
 try {
   execFileSync("claude", ["--version"], { stdio: "pipe" });
@@ -170,10 +172,6 @@ if (fs.existsSync(outputFile) && !force) {
   console.error("Use --force to overwrite.");
   process.exit(1);
 }
-
-// ---------------------------------------------------------------------------
-// Pipeline phase
-// ---------------------------------------------------------------------------
 
 let words: WordEntry[];
 
@@ -409,3 +407,10 @@ if (fs.existsSync(progressFile)) {
 }
 
 console.log(`Done! ${completeWords.length} words written to ${outputFile}`);
+
+} // end main
+
+main().catch((err) => {
+  console.error("Fatal:", err instanceof Error ? err.message : err);
+  process.exit(1);
+});
