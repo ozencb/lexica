@@ -221,7 +221,7 @@ if (existing) {
 
 console.log("\nGap-filling with Claude...");
 
-const incomplete = words.filter((w) => !w.nativeWord || !w.learningSentence);
+const incomplete = words.filter((w) => !w.nativeWord || !w.learningSentence || !w.nativeSentence);
 console.log(`  ${incomplete.length} words need gap-filling`);
 
 for (let i = 0; i < incomplete.length; i += batchSize) {
@@ -390,12 +390,12 @@ if (droppedCount > 0) {
 
 const output = {
   metadata: {
-    target,
-    source,
-    type: wordType,
+    targetLang: target,
+    sourceLang: source,
+    wordType,
     count: completeWords.length,
     generatedAt: new Date().toISOString(),
-    model,
+    version: 1,
   },
   words: completeWords.map(({ verified, ...rest }) => rest),
 };
