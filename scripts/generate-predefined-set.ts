@@ -50,6 +50,7 @@ const { values: args } = parseArgs({
     source: { type: "string" },
     type: { type: "string" },
     count: { type: "string" },
+    "add-to": { type: "string" },
     "batch-size": { type: "string", default: "50" },
     concurrency: { type: "string", default: "3" },
     model: { type: "string", default: "sonnet" },
@@ -58,38 +59,78 @@ const { values: args } = parseArgs({
   strict: true,
 });
 
-const target = args.target!;
-const source = args.source!;
-const wordType = args.type as "nouns" | "verbs";
-const count = parseInt(args.count!, 10);
+const addTo = args["add-to"];
+let target: string;
+let source: string;
+let wordType: "nouns" | "verbs";
+let count: number;
+let existingWords: Map<string, ProcessedWord> = new Map();
+
+if (addTo) {
+  // --add-to mode: infer target/source/type from filename
+  const match = addTo.match(/^(\w+)-(\w+)-(nouns|verbs)-(\d+)\.json$/);
+  if (!match) {
+    console.error("--add-to filename must match pattern: {target}-{source}-{nouns|verbs}-{count}.json");
+    process.exit(1);
+  }
+  target = match[1];
+  source = match[2];
+  wordType = match[3] as "nouns" | "verbs";
+  count = parseInt(args.count!, 10);
+
+  if (!count) {
+    console.error("--count is required with --add-to (number of new words to add)");
+    process.exit(1);
+  }
+
+  const addToPath = path.join(OUTPUT_DIR, addTo);
+  if (!fs.existsSync(addToPath)) {
+    console.error(`File not found: ${addToPath}`);
+    process.exit(1);
+  }
+
+  const existing = JSON.parse(fs.readFileSync(addToPath, "utf-8"));
+  for (const w of existing.words) {
+    existingWords.set(w.learningWord, w);
+  }
+  console.log(`Adding to ${addTo} (${existingWords.size} existing words to skip)`);
+} else {
+  target = args.target!;
+  source = args.source!;
+  wordType = args.type as "nouns" | "verbs";
+  count = parseInt(args.count!, 10);
+
+  if (!target || !source || !wordType || !count) {
+    console.error(
+      "Usage: npx tsx scripts/generate-predefined-set.ts --target <lang> --source <lang> --type <nouns|verbs> --count <n>\n" +
+      "       npx tsx scripts/generate-predefined-set.ts --add-to <file.json> --count <n>"
+    );
+    process.exit(1);
+  }
+
+  if (wordType !== "nouns" && wordType !== "verbs") {
+    console.error("--type must be 'nouns' or 'verbs'");
+    process.exit(1);
+  }
+}
+
 const batchSize = parseInt(args["batch-size"]!, 10);
 const concurrency = parseInt(args.concurrency!, 10);
 const model = args.model!;
 const force = args.force!;
 
-if (!target || !source || !wordType || !count) {
-  console.error(
-    "Usage: npx tsx scripts/generate-predefined-set.ts --target <lang> --source <lang> --type <nouns|verbs> --count <n>"
-  );
-  process.exit(1);
-}
-
-if (wordType !== "nouns" && wordType !== "verbs") {
-  console.error("--type must be 'nouns' or 'verbs'");
-  process.exit(1);
-}
-
 const targetLabel = LANG_LABELS[target] ?? target;
 const sourceLabel = LANG_LABELS[source] ?? source;
 const posFilter: "noun" | "verb" = wordType === "nouns" ? "noun" : "verb";
 
+const totalCount = addTo ? existingWords.size + count : count;
 const outputFile = path.join(
   OUTPUT_DIR,
-  `${target}-${source}-${wordType}-${count}.json`
+  `${target}-${source}-${wordType}-${totalCount}.json`
 );
 const progressFile = path.join(
   OUTPUT_DIR,
-  `.progress-${target}-${source}-${wordType}.json`
+  `.progress-${addTo ? "add-" : ""}${target}-${source}-${wordType}.json`
 );
 
 // ---------------------------------------------------------------------------
@@ -226,7 +267,7 @@ try {
   process.exit(1);
 }
 
-if (fs.existsSync(outputFile) && !force) {
+if (fs.existsSync(outputFile) && !force && !addTo) {
   console.error(`Output already exists: ${outputFile}`);
   console.error("Use --force to overwrite.");
   process.exit(1);
@@ -246,7 +287,10 @@ if (existing) {
 
   console.log("  Fetching frequency words...");
   const allFrequencyWords = await fetchFrequencyWords(target, 50_000);
-  const frequencyWords = filterByPos(allFrequencyWords, wiktionaryData, posFilter, count);
+  const filtered = addTo
+    ? allFrequencyWords.filter((w) => !existingWords.has(w.word))
+    : allFrequencyWords;
+  const frequencyWords = filterByPos(filtered, wiktionaryData, posFilter, count);
 
   if (frequencyWords.length < count) {
     console.warn(
@@ -374,25 +418,29 @@ ${JSON.stringify(batchData, null, 2)}`;
 
 console.log("\nWriting output...");
 
-const completeWords = words.filter(isComplete);
-const droppedCount = words.length - completeWords.length;
+const newCompleteWords = words.filter(isComplete);
+const droppedCount = words.length - newCompleteWords.length;
 
 if (droppedCount > 0) {
   console.warn(
-    `Warning: dropping ${droppedCount} incomplete words (${completeWords.length}/${words.length} complete)`
+    `Warning: dropping ${droppedCount} incomplete words (${newCompleteWords.length}/${words.length} complete)`
   );
 }
+
+const allWords = addTo
+  ? [...existingWords.values(), ...newCompleteWords.map(({ verified, ...rest }) => rest)]
+  : newCompleteWords.map(({ verified, ...rest }) => rest);
 
 const output = {
   metadata: {
     targetLang: target,
     sourceLang: source,
     wordType,
-    count: completeWords.length,
+    count: allWords.length,
     generatedAt: new Date().toISOString(),
     version: 1,
   },
-  words: completeWords.map(({ verified, ...rest }) => rest),
+  words: allWords,
 };
 
 fs.mkdirSync(OUTPUT_DIR, { recursive: true });
@@ -403,7 +451,11 @@ if (fs.existsSync(progressFile)) {
   fs.unlinkSync(progressFile);
 }
 
-console.log(`Done! ${completeWords.length} words written to ${outputFile}`);
+if (addTo) {
+  console.log(`Done! ${newCompleteWords.length} new + ${existingWords.size} existing = ${allWords.length} total words written to ${outputFile}`);
+} else {
+  console.log(`Done! ${allWords.length} words written to ${outputFile}`);
+}
 
 } // end main
 

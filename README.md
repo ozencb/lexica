@@ -92,15 +92,24 @@ Generate curated word sets using frequency lists, Wiktionary, Tatoeba, and Claud
 npx tsx scripts/generate-predefined-set.ts --target fr --source en --type nouns --count 1000
 ```
 
+Add more words to an existing set (duplicates are automatically excluded):
+
+```bash
+npx tsx scripts/generate-predefined-set.ts --add-to fr-en-nouns-1000.json --count 200
+```
+
 | Flag | Description | Required |
 |------|-------------|----------|
-| `--target` | Learning language (fr, es, etc.) | Yes |
-| `--source` | Native language (en, etc.) | Yes |
-| `--type` | `nouns` or `verbs` | Yes |
-| `--count` | Number of words | Yes |
+| `--target` | Learning language (fr, es, etc.) | Yes* |
+| `--source` | Native language (en, etc.) | Yes* |
+| `--type` | `nouns` or `verbs` | Yes* |
+| `--count` | Number of words (new words when using `--add-to`) | Yes |
+| `--add-to` | Existing set file to extend (infers target/source/type) | No |
 | `--batch-size` | Words per LLM batch (default: 50) | No |
 | `--concurrency` | Parallel LLM batches (default: 3) | No |
 | `--model` | Claude model (default: sonnet) | No |
 | `--force` | Overwrite existing output | No |
+
+\* Not required when using `--add-to` (inferred from filename).
 
 Output goes to `data/predefined-sets/`. The script is resumable — if interrupted, re-run with the same args to continue. Requires [Claude Code](https://claude.ai/claude-code) CLI in PATH.
