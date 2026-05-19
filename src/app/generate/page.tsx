@@ -80,6 +80,12 @@ export default function GeneratePage() {
         <p className="text-xs text-muted-foreground mt-1">
           Build a word set from frequency lists, Wiktionary, and Tatoeba
         </p>
+        <p className="text-xs text-muted-foreground">
+          Looking for a complete set?{" "}
+          <Link href="/import?tab=predefined" className="text-primary hover:underline">
+            Load a predefined set →
+          </Link>
+        </p>
       </div>
 
       <GenerateForm onSubmit={handleGenerate} loading={loading} />

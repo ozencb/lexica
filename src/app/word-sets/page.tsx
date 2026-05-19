@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical, Download } from "lucide-react";
+import { PredefinedSetLoader } from "@/components/predefined-sets/predefined-set-loader";
 
 const LANG_LABELS: Record<string, string> = {
   en: "English",
@@ -71,6 +72,8 @@ export default function WordSetsPage() {
           No word sets yet. Generate one or import from CSV/Anki.
         </p>
       )}
+
+      <PredefinedSetLoader />
 
       {wordSets && wordSets.length > 0 && (
         <div className="space-y-1.5">
