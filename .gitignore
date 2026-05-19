@@ -41,7 +41,9 @@ yarn-error.log*
 next-env.d.ts
 
 # app data
-/data/
+/data/*
+!/data/predefined-sets/
+/data/predefined-sets/.progress-*
 .superpowers/
 .claude
 .playwright-mcp
