@@ -10,7 +10,8 @@ Self-hostable language learning app with spaced repetition flashcards. Generate 
 
 - **Spaced repetition** — SM-2 algorithm with interval previews and session summaries
 - **Word generation pipeline** — frequency lists + Wiktionary definitions + Tatoeba example sentences
-- **Import** — CSV/TSV files and Anki decks (.apkg)
+- **Predefined sets** — curated French & Spanish word sets (nouns + verbs) ready to load
+- **Import** — CSV/TSV files, Anki decks (.apkg), and predefined sets
 - **Export** — word sets to CSV
 - **Text-to-speech** — Kokoro TTS via a Python sidecar (EN, FR, ES)
 - **Progress tracking** — accuracy charts, streaks, learning history
@@ -59,7 +60,9 @@ src/
     ├── pipeline/        # Generation pipeline (frequency, wiktionary, tatoeba)
     ├── import/          # CSV & Anki parsers
     └── sm2.ts           # Spaced repetition algorithm
+scripts/                 # CLI tools (predefined set generator)
 tts-sidecar/             # FastAPI TTS server
+data/predefined-sets/    # Generated word set JSON files
 ```
 
 ## Database
@@ -80,3 +83,24 @@ npx drizzle-kit migrate
 | `npm run build` | Production build |
 | `npm run start` | Start production server |
 | `npm run lint` | Run ESLint |
+
+### Generating Predefined Word Sets
+
+Generate curated word sets using frequency lists, Wiktionary, Tatoeba, and Claude Code for gap-filling:
+
+```bash
+npx tsx scripts/generate-predefined-set.ts --target fr --source en --type nouns --count 1000
+```
+
+| Flag | Description | Required |
+|------|-------------|----------|
+| `--target` | Learning language (fr, es, etc.) | Yes |
+| `--source` | Native language (en, etc.) | Yes |
+| `--type` | `nouns` or `verbs` | Yes |
+| `--count` | Number of words | Yes |
+| `--batch-size` | Words per LLM batch (default: 50) | No |
+| `--concurrency` | Parallel LLM batches (default: 3) | No |
+| `--model` | Claude model (default: sonnet) | No |
+| `--force` | Overwrite existing output | No |
+
+Output goes to `data/predefined-sets/`. The script is resumable — if interrupted, re-run with the same args to continue. Requires [Claude Code](https://claude.ai/claude-code) CLI in PATH.

@@ -1,7 +1,9 @@
-import { parseArgs } from "node:util";
-import { execFileSync } from "node:child_process";
+import { parseArgs, promisify } from "node:util";
+import { execFile, execFileSync } from "node:child_process";
 import fs from "fs";
 import path from "path";
+
+const execFileAsync = promisify(execFile);
 
 import { fetchFrequencyWords } from "../src/lib/pipeline/frequency-words";
 import { fetchWiktionaryData } from "../src/lib/pipeline/wiktionary";
@@ -48,6 +50,7 @@ const { values: args } = parseArgs({
     type: { type: "string" },
     count: { type: "string" },
     "batch-size": { type: "string", default: "50" },
+    concurrency: { type: "string", default: "3" },
     model: { type: "string", default: "sonnet" },
     force: { type: "boolean", default: false },
   },
@@ -59,6 +62,7 @@ const source = args.source!;
 const wordType = args.type as "nouns" | "verbs";
 const count = parseInt(args.count!, 10);
 const batchSize = parseInt(args["batch-size"]!, 10);
+const concurrency = parseInt(args.concurrency!, 10);
 const model = args.model!;
 const force = args.force!;
 
@@ -114,23 +118,77 @@ function saveProgress(words: WordEntry[]): void {
   fs.writeFileSync(progressFile, JSON.stringify(data, null, 2));
 }
 
-function invokeClaude(prompt: string): string {
-  const cliArgs = [
-    "-p",
-    prompt,
-    "--output-format",
-    "json",
-    "--model",
-    model,
-  ];
-  const output = execFileSync("claude", cliArgs, {
+async function invokeClaude(prompt: string): Promise<string> {
+  const cliArgs = ["-p", prompt, "--output-format", "json", "--model", model];
+  const { stdout } = await execFileAsync("claude", cliArgs, {
     encoding: "utf-8",
     timeout: 300_000,
     maxBuffer: 50 * 1024 * 1024,
   });
-  const response = JSON.parse(output);
+  const response = JSON.parse(stdout);
   if (response.is_error) throw new Error(`Claude error: ${response.result}`);
   return response.result;
+}
+
+type LLMResult = Array<{
+  learningWord: string;
+  nativeWord: string;
+  learningSentence: string;
+  nativeSentence: string;
+}>;
+
+async function runBatches(
+  items: WordEntry[],
+  buildPrompt: (batch: WordEntry[]) => string,
+  mergeResult: (result: LLMResult) => void,
+  label: string,
+): Promise<void> {
+  const batches: WordEntry[][] = [];
+  for (let i = 0; i < items.length; i += batchSize) {
+    batches.push(items.slice(i, i + batchSize));
+  }
+  if (batches.length === 0) return;
+
+  let nextIdx = 0;
+  let completed = 0;
+  const total = batches.length;
+
+  async function worker() {
+    while (true) {
+      const idx = nextIdx++;
+      if (idx >= total) break;
+      const batch = batches[idx];
+      const prompt = buildPrompt(batch);
+
+      let result: LLMResult | null = null;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          const raw = await invokeClaude(prompt);
+          result = parseClaudeJSON(raw);
+          break;
+        } catch (err) {
+          const delay = Math.pow(2, attempt) * 5000;
+          console.warn(
+            `    [${label}] Batch ${idx + 1}/${total} attempt ${attempt + 1} failed. Retrying in ${delay / 1000}s...`
+          );
+          await sleep(delay);
+        }
+      }
+
+      if (result) {
+        mergeResult(result);
+      } else {
+        console.error(`    [${label}] Batch ${idx + 1}/${total} failed after 3 attempts, skipping`);
+      }
+
+      completed++;
+      console.log(`  [${label}] ${completed}/${total} done`);
+    }
+  }
+
+  await Promise.all(
+    Array.from({ length: Math.min(concurrency, total) }, () => worker())
+  );
 }
 
 function parseClaudeJSON<T>(text: string): T {
@@ -217,30 +275,21 @@ if (existing) {
 // LLM gap-filling phase
 // ---------------------------------------------------------------------------
 
-console.log("\nGap-filling with Claude...");
+console.log(`\nGap-filling with Claude (concurrency: ${concurrency})...`);
 
 const incomplete = words.filter((w) => !w.nativeWord || !w.learningSentence || !w.nativeSentence);
 console.log(`  ${incomplete.length} words need gap-filling`);
 
-for (let i = 0; i < incomplete.length; i += batchSize) {
-  const batch = incomplete.slice(i, i + batchSize);
-
-  // skip if all already complete
-  if (batch.every((w) => w.nativeWord && w.learningSentence && w.nativeSentence))
-    continue;
-
-  const batchNum = Math.floor(i / batchSize) + 1;
-  const totalBatches = Math.ceil(incomplete.length / batchSize);
-  console.log(`  Batch ${batchNum}/${totalBatches}...`);
-
-  const batchData = batch.map((w) => ({
-    learningWord: w.learningWord,
-    nativeWord: w.nativeWord,
-    learningSentence: w.learningSentence,
-    nativeSentence: w.nativeSentence,
-  }));
-
-  const prompt = `You are a ${targetLabel}↔${sourceLabel} language expert. Fill in missing translations and example sentences for these ${targetLabel} ${wordType}.
+await runBatches(
+  incomplete,
+  (batch) => {
+    const batchData = batch.map((w) => ({
+      learningWord: w.learningWord,
+      nativeWord: w.nativeWord,
+      learningSentence: w.learningSentence,
+      nativeSentence: w.nativeSentence,
+    }));
+    return `You are a ${targetLabel}↔${sourceLabel} language expert. Fill in missing translations and example sentences for these ${targetLabel} ${wordType}.
 
 For each word, provide:
 - nativeWord: the most common ${sourceLabel} translation
@@ -251,73 +300,40 @@ Return ONLY a valid JSON array. Each element must have: learningWord, nativeWord
 
 Words (keep existing accurate data, fill what's missing):
 ${JSON.stringify(batchData, null, 2)}`;
-
-  let result: Array<{
-    learningWord: string;
-    nativeWord: string;
-    learningSentence: string;
-    nativeSentence: string;
-  }> | null = null;
-
-  for (let attempt = 0; attempt < 3; attempt++) {
-    try {
-      const raw = invokeClaude(prompt);
-      result = parseClaudeJSON(raw);
-      break;
-    } catch (err) {
-      const delay = Math.pow(2, attempt) * 5000;
-      console.warn(
-        `    Attempt ${attempt + 1} failed: ${err instanceof Error ? err.message : err}. Retrying in ${delay / 1000}s...`
-      );
-      await sleep(delay);
+  },
+  (result) => {
+    for (const filled of result) {
+      const word = words.find((w) => w.learningWord === filled.learningWord);
+      if (word) {
+        if (filled.nativeWord) word.nativeWord = filled.nativeWord;
+        if (filled.learningSentence) word.learningSentence = filled.learningSentence;
+        if (filled.nativeSentence) word.nativeSentence = filled.nativeSentence;
+      }
     }
-  }
-
-  if (!result) {
-    console.error(`    Failed after 3 attempts, skipping batch ${batchNum}`);
-    continue;
-  }
-
-  // Merge results back into words array
-  for (const filled of result) {
-    const word = words.find((w) => w.learningWord === filled.learningWord);
-    if (word) {
-      if (filled.nativeWord) word.nativeWord = filled.nativeWord;
-      if (filled.learningSentence)
-        word.learningSentence = filled.learningSentence;
-      if (filled.nativeSentence) word.nativeSentence = filled.nativeSentence;
-    }
-  }
-
-  saveProgress(words);
-}
+    saveProgress(words);
+  },
+  "gap-fill",
+);
 
 // ---------------------------------------------------------------------------
 // LLM verification phase
 // ---------------------------------------------------------------------------
 
-console.log("\nVerifying with Claude...");
+console.log(`\nVerifying with Claude (concurrency: ${concurrency})...`);
 
 const unverified = words.filter((w) => !w.verified && isComplete(w));
 console.log(`  ${unverified.length} words to verify`);
 
-for (let i = 0; i < unverified.length; i += batchSize) {
-  const batch = unverified.slice(i, i + batchSize);
-
-  if (batch.every((w) => w.verified)) continue;
-
-  const batchNum = Math.floor(i / batchSize) + 1;
-  const totalBatches = Math.ceil(unverified.length / batchSize);
-  console.log(`  Batch ${batchNum}/${totalBatches}...`);
-
-  const batchData = batch.map((w) => ({
-    learningWord: w.learningWord,
-    nativeWord: w.nativeWord,
-    learningSentence: w.learningSentence,
-    nativeSentence: w.nativeSentence,
-  }));
-
-  const prompt = `You are a ${targetLabel}↔${sourceLabel} language expert. Review these vocabulary entries for accuracy.
+await runBatches(
+  unverified,
+  (batch) => {
+    const batchData = batch.map((w) => ({
+      learningWord: w.learningWord,
+      nativeWord: w.nativeWord,
+      learningSentence: w.learningSentence,
+      nativeSentence: w.nativeSentence,
+    }));
+    return `You are a ${targetLabel}↔${sourceLabel} language expert. Review these vocabulary entries for accuracy.
 
 Check each entry for:
 1. Translation accuracy
@@ -329,47 +345,21 @@ Return ONLY a valid JSON array with the same structure.
 
 Entries:
 ${JSON.stringify(batchData, null, 2)}`;
-
-  let result: Array<{
-    learningWord: string;
-    nativeWord: string;
-    learningSentence: string;
-    nativeSentence: string;
-  }> | null = null;
-
-  for (let attempt = 0; attempt < 3; attempt++) {
-    try {
-      const raw = invokeClaude(prompt);
-      result = parseClaudeJSON(raw);
-      break;
-    } catch (err) {
-      const delay = Math.pow(2, attempt) * 5000;
-      console.warn(
-        `    Attempt ${attempt + 1} failed: ${err instanceof Error ? err.message : err}. Retrying in ${delay / 1000}s...`
-      );
-      await sleep(delay);
+  },
+  (result) => {
+    for (const verified of result) {
+      const word = words.find((w) => w.learningWord === verified.learningWord);
+      if (word) {
+        if (verified.nativeWord) word.nativeWord = verified.nativeWord;
+        if (verified.learningSentence) word.learningSentence = verified.learningSentence;
+        if (verified.nativeSentence) word.nativeSentence = verified.nativeSentence;
+        word.verified = true;
+      }
     }
-  }
-
-  if (!result) {
-    console.error(`    Failed after 3 attempts, skipping batch ${batchNum}`);
-    continue;
-  }
-
-  for (const verified of result) {
-    const word = words.find((w) => w.learningWord === verified.learningWord);
-    if (word) {
-      if (verified.nativeWord) word.nativeWord = verified.nativeWord;
-      if (verified.learningSentence)
-        word.learningSentence = verified.learningSentence;
-      if (verified.nativeSentence)
-        word.nativeSentence = verified.nativeSentence;
-      word.verified = true;
-    }
-  }
-
-  saveProgress(words);
-}
+    saveProgress(words);
+  },
+  "verify",
+);
 
 // ---------------------------------------------------------------------------
 // Output phase
