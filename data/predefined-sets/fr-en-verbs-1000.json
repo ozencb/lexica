@@ -3,8 +3,8 @@
     "targetLang": "fr",
     "sourceLang": "en",
     "wordType": "verbs",
-    "count": 934,
-    "generatedAt": "2026-05-19T12:00:25.830Z",
+    "count": 946,
+    "generatedAt": "2026-05-19T12:30:08.070Z",
     "version": 1
   },
   "words": [
@@ -7479,6 +7479,102 @@
       "nativeSentence": "It is difficult to govern a country during a period of economic crisis.",
       "partOfSpeech": "verb",
       "frequencyRank": 14258
+    },
+    {
+      "learningWord": "arracher",
+      "nativeWord": "to uproot, pull up, tear out",
+      "learningSentence": "Il a arraché les mauvaises herbes du jardin.",
+      "nativeSentence": "He pulled the weeds out of the garden.",
+      "partOfSpeech": "verb",
+      "frequencyRank": 4166
+    },
+    {
+      "learningWord": "tendre",
+      "nativeWord": "to stretch, to extend; to hold out",
+      "learningSentence": "Elle a tendu la corde entre deux arbres.",
+      "nativeSentence": "She stretched the rope between two trees.",
+      "partOfSpeech": "verb",
+      "frequencyRank": 4167
+    },
+    {
+      "learningWord": "débrouiller",
+      "nativeWord": "to disentangle (threads)",
+      "learningSentence": "Il a réussi à débrouiller les fils emmêlés.",
+      "nativeSentence": "He managed to disentangle the tangled threads.",
+      "partOfSpeech": "verb",
+      "frequencyRank": 4171
+    },
+    {
+      "learningWord": "déménager",
+      "nativeWord": "to move (house), to move out; to move (belongings)",
+      "learningSentence": "Nous avons déménagé tous les meubles en une seule journée.",
+      "nativeSentence": "We moved all the furniture in a single day.",
+      "partOfSpeech": "verb",
+      "frequencyRank": 4212
+    },
+    {
+      "learningWord": "ressembler",
+      "nativeWord": "to resemble (to share similar qualities with)",
+      "learningSentence": "Tu ressembles beaucoup à ta mère.",
+      "nativeSentence": "You resemble your mother a lot.",
+      "partOfSpeech": "verb",
+      "frequencyRank": 4227
+    },
+    {
+      "learningWord": "abattre",
+      "nativeWord": "to butcher; to slaughter for meat",
+      "learningSentence": "Le fermier a abattu le cochon avant l'hiver.",
+      "nativeSentence": "The farmer slaughtered the pig before winter.",
+      "partOfSpeech": "verb",
+      "frequencyRank": 4298
+    },
+    {
+      "learningWord": "confirmer",
+      "nativeWord": "to confirm (a fact etc.)",
+      "learningSentence": "Pouvez-vous confirmer votre réservation par écrit ?",
+      "nativeSentence": "Can you confirm your reservation in writing?",
+      "partOfSpeech": "verb",
+      "frequencyRank": 4320
+    },
+    {
+      "learningWord": "subir",
+      "nativeWord": "to undergo, to endure",
+      "learningSentence": "Il a dû subir une longue opération.",
+      "nativeSentence": "He had to undergo a long operation.",
+      "partOfSpeech": "verb",
+      "frequencyRank": 4433
+    },
+    {
+      "learningWord": "accuser",
+      "nativeWord": "to accuse",
+      "learningSentence": "On l'a accusé d'avoir volé l'argent.",
+      "nativeSentence": "He was accused of stealing the money.",
+      "partOfSpeech": "verb",
+      "frequencyRank": 4475
+    },
+    {
+      "learningWord": "dealer",
+      "nativeWord": "to deal (drugs)",
+      "learningSentence": "Il a été arrêté parce qu'il dealait dans le quartier.",
+      "nativeSentence": "He was arrested because he was dealing drugs in the neighborhood.",
+      "partOfSpeech": "verb",
+      "frequencyRank": 4476
+    },
+    {
+      "learningWord": "harper",
+      "nativeWord": "to grasp forcefully",
+      "learningSentence": "Il l'a harpé par le bras pour l'empêcher de tomber.",
+      "nativeSentence": "He grabbed him by the arm to stop him from falling.",
+      "partOfSpeech": "verb",
+      "frequencyRank": 4816
+    },
+    {
+      "learningWord": "évolué",
+      "nativeWord": "to evolve, to develop, to progress",
+      "learningSentence": "La tempête a évolué en un typhon.",
+      "nativeSentence": "The storm developed into a typhoon.",
+      "partOfSpeech": "verb",
+      "frequencyRank": 10201
     }
   ]
 }
