@@ -3,6 +3,7 @@ import {
   loadPredefinedSet,
   formatSetDisplayName,
 } from "@/lib/predefined-sets";
+import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { wordSets, words } from "@/lib/db/schema";
 
@@ -15,6 +16,15 @@ export async function POST(request: NextRequest) {
   try {
     const set = loadPredefinedSet(filename);
     const name = formatSetDisplayName(set.metadata);
+
+    const existing = await db
+      .select({ id: wordSets.id })
+      .from(wordSets)
+      .where(eq(wordSets.name, name))
+      .limit(1);
+    if (existing.length > 0) {
+      return Response.json({ error: "Set already loaded" }, { status: 409 });
+    }
 
     const [wordSet] = await db
       .insert(wordSets)

@@ -17,6 +17,7 @@ interface PredefinedSetInfo {
     version: number;
   };
   displayName: string;
+  loaded: boolean;
 }
 
 export function PredefinedSetLoader() {
@@ -49,6 +50,7 @@ export function PredefinedSetLoader() {
       if (!res.ok) throw new Error(data.error || "Load failed");
       setResult(data);
       mutate("/api/word-sets");
+      mutate("/api/predefined-sets");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Load failed");
     } finally {
@@ -71,11 +73,16 @@ export function PredefinedSetLoader() {
           </div>
           <Button
             size="sm"
+            variant={set.loaded ? "outline" : "default"}
             className="shrink-0 ml-3"
             onClick={() => handleLoad(set.filename)}
-            disabled={loadingFile !== null}
+            disabled={set.loaded || loadingFile !== null}
           >
-            {loadingFile === set.filename ? "Loading..." : "Load"}
+            {set.loaded
+              ? "Loaded"
+              : loadingFile === set.filename
+                ? "Loading..."
+                : "Load"}
           </Button>
         </div>
       ))}
